@@ -20,12 +20,16 @@ transformador = LabelEncoder() # iniciando obj transformador
 # 1A, 2B, 3C, 4D, 5E, 6F, 7G, 8H, 9I, 10J, 11K, 12L, 13M, 14N, 15O, 16P, 17Q, 18R, 19S, 20T, 21U, 22V, 23W, 24X, 25Y, 26Z
 
 #Transfomando colunas 
-for i in range(2,4): #2>= i < 4
+
+for i in range(3,5): #3>= i < 5, CD
     data[:, i] = transformador.fit_transform(data[:, i])
     
-for i in range(6,9): #6>= i < 9
+for i in range(6,9): #6>= i < 9 , FGH
     data[:, i] = transformador.fit_transform(data[:, i])
-      
+
+# 8H
+data[:, 8] = transformador.fit_transform(data[:, 8])
+
 
 # Exibindo shapes para verificar
 print("Shape dos dados:", data.shape)
