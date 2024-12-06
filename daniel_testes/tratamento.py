@@ -30,7 +30,6 @@ for i in range(6,9): #6>= i < 9 , FGH
 # 8H
 data[:, 8] = transformador.fit_transform(data[:, 8])
 
-
 # Exibindo shapes para verificar
 print("Shape dos dados:", data.shape)
 print("Shape dos rótulos:", labels.shape)
