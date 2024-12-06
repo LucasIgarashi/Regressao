@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-# A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, I = 8, J = 9, K = 10, L = 11, M = 12, N = 13, O = 14, P = 15, Q = 16, R = 17, S = 18, T = 19, U 
+
 # Carregar os dados
 minha_base = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
 
@@ -10,17 +10,39 @@ numero_modelos = minha_base.iloc[:, 3].nunique()  # Use iloc para acessar a colu
 print("Número de modelos únicos:", numero_modelos)
 
 numero_fabricas = minha_base.iloc[:, 2].nunique() 
-print("Número de fabricas únicas:", numero_fabricas)
+print("Número de fábricas únicas:", numero_fabricas)
 
-numero_categoria = minha_base.iloc[:,5].nunique()
+numero_categoria = minha_base.iloc[:, 5].nunique()
 print("Número de categorias únicas:", numero_categoria)
 
 numero_cambios = minha_base.iloc[:, 11]
-print("Número de cambios únicos:", numero_cambios.nunique())
+print("Número de câmbios únicos:", numero_cambios.nunique())
 
-numero_id=minha_base.iloc[:, 0]
+numero_id = minha_base.iloc[:, 0]
 print("Número de IDs únicos:", numero_id.nunique())
 
+# Identificar e contar as duplicatas
 duplicatas = minha_base[minha_base.duplicated()]
-print("\nNúmero de duplicatas:", len(duplicatas))
-print("linhas duplicatas:", duplicatas)
+print("\nNúmero de linhas com todas carc. duplicadas:", len(duplicatas))
+
+# Número total de linhas e colunas
+numero_linhas = len(minha_base)
+numero_columns = len(minha_base.columns)
+print("Número total de linhas:", numero_linhas)
+print("Número total de colunas:", numero_columns)
+
+# Diferença entre o número de linhas e o número de IDs únicos
+print("Diferença NumL - NumID:\n", numero_linhas - numero_id.nunique())
+
+duplicados = minha_base[minha_base.duplicated(subset='ID', keep=False)]
+# Agrupar as linhas com IDs duplicados
+id_duplicados = duplicados.groupby('ID').apply(lambda group: group.index.tolist())
+
+# Exibir as linhas duplicadas de forma desejada
+cont = 0
+for id_valor, indices in id_duplicados.items():
+    for i in range(len(indices)):
+        for j in range(i + 1, len(indices)):
+            print(f"Linha {indices[i]} e Linha {indices[j]}")
+            cont += 1
+print("numero de duplicados:",cont)
