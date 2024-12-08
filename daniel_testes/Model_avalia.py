@@ -17,9 +17,11 @@ def Processar_Dados_Treino(dados):
 
     '''EXCLUI COLUNAS INÚTEIS:''' 
     dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
-    # Eliminamos muitas colunas então podemos ter decidido errado sobre a importancia delas pesquisei dois métodos pra dar uma olhada seleção de características ou análise de variância (ANOVA)
+
 
     '''ARRUMAR SINTAXE'''
+
+    #Combustível - Gás Natural, Gasolina, Diesel estavam escritos de formas diferentes. Realizando as substituições: 
     dados["Combustivel"] = dados["Combustivel"].replace({
         "Gás Natural": "Gás",
         "gasolina": "Gasolina",
@@ -30,16 +32,21 @@ def Processar_Dados_Treino(dados):
         "Dies.": "Diesel"
     }) 
 
-    """KM tem km escrito"""
-    dados["Km"] = dados["Km"].str.replace(" km", "", regex=False) 
+    #KM: tem km escrito
+    dados["Km"] = dados["Km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
+    dados["Km"] = dados["Km"].astype(float) # Convertendo os valores para números float
 
 
     '''MUDAR VARIÁVEL NOMINAL PARA CONTÍNUA'''
+    #One Hot Enconding, cria uma coluna para cada categoria existente, aumenta a dimensionalidade. Usa quando tem poucas categorias, como em Combustivel, Classificacao_Veiculo e Faixa_Preco.
+    # Applying one-hot encoding
     dados = pd.get_dummies(dados, dtype=float)
 
 
     '''PREENCHER LACUNAS'''
+    #Preencher Km pela média dos Km.
     dados["Km"] = dados["Km"].fillna(dados["Km"].mean())
+    #Preencher Km pela média dos Km.
     dados["Preco"] = dados["Preco"].fillna(dados["Preco"].mean())
 
 
@@ -55,11 +62,13 @@ def Processar_Dados_Treino(dados):
 
 
     '''TIRA OUTLIERS''' 
-    #Nessa parte podemos talvez reavaliar oq estamso tirando de outlier já que podemos ter um outlier verdadeiro que contribui pro nosso modelo
-    tirar_outl = OneClassSVM(kernel='rbf', gamma=0.1, nu=0.05)
-    tirar_outl.fit(atributos_padronizados)
-    amostras_normais = tirar_outl.predict(atributos_padronizados) == 1 
+    #Tirar o outliers depois de padronizar, pois o método OneClassSVM é sensível à outliers.
 
+    tirar_outl = OneClassSVM(kernel='rbf', gamma=0.1, nu=0.05)  # Ajustar `gamma` e `nu` conforme necessário
+    tirar_outl.fit(atributos_padronizados)
+    amostras_normais = tirar_outl.predict(atributos_padronizados) == 1 #O modelo retorna 1 para amostras consideradas normais e -1 para outliers.
+
+    #Filtra os dados dos outliers descobertos
     dados_limpos = atributos[amostras_normais]
     precos_limpos = precos[amostras_normais]
 
@@ -80,6 +89,7 @@ def Processar_Dados_Teste(dados):
 
     '''ARRUMAR SINTAXE'''
 
+    #Combustível - Gás Natural, Gasolina, Diesel estavam escritos de formas diferentes. Realizando as substituições: 
     dados["Combustivel"] = dados["Combustivel"].replace({
         "Gás Natural": "Gás",
         "gasolina": "Gasolina",
@@ -90,18 +100,22 @@ def Processar_Dados_Teste(dados):
         "Dies.": "Diesel"
     }) 
 
-    dados["Km"] = dados["Km"].str.replace(" km", "", regex=False) 
-    dados["Km"] = dados["Km"].astype(float) 
+    #KM: tem km escrito
+    dados["Km"] = dados["Km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
+    dados["Km"] = dados["Km"].astype(float) # Convertendo os valores para números float
 
-        #tomar cuidado se tiver mais info em uma das duas, exemplo tem tudo no trieno mas falta gasosa no teste e vice versa
 
     '''MUDAR VARIÁVEL NOMINAL PARA CONTÍNUA'''
+    #One Hot Enconding, cria uma coluna para cada categoria existente, aumenta a dimensionalidade. Usa quando tem poucas categorias, como em Combustivel, Classificacao_Veiculo e Faixa_Preco.
+    # Applying one-hot encoding
     dados = pd.get_dummies(dados, dtype=float)
 
 
     '''PREENCHER LACUNAS'''
-    #tem que discutir isso aqui  ass: @Gessner-Lucas @LucasIgarashi
+    #tem que discutir isso aqui  ass: @Gessner-Lucas
+    #Preencher Km pela média dos Km.
     dados["Km"] = dados["Km"].fillna(dados["Km"].mean())
+    #Preencher Km pela média dos Km.
     dados["Preco"] = dados["Preco"].fillna(dados["Preco"].mean())
 
 
@@ -113,7 +127,7 @@ def Processar_Dados_Teste(dados):
     '''PADRONIZA'''
     padronizar = StandardScaler()
     padronizar.fit(atributos)
-    atributos_padronizados = padronizar.transform(atributos)
+    atributos_padronizados = padronizar.transform(atributos) #vira np array
 
     '''MUDA DE VOLTA PARA NUMPY'''
     precos = precos.to_numpy()
@@ -128,6 +142,7 @@ def Random_Forest(dados_treino, precos_treino, dados_teste):
     amazonia = RandomForestRegressor(n_estimators=100)
     amazonia.fit(dados_treino, precos_treino)
 
+    #Previsão
     precos_previstos = amazonia.predict(dados_teste)
 
     return precos_previstos
@@ -138,7 +153,7 @@ def Svr(dados_treino, precos_treino, dados_teste):
     srv = SVR()
     srv.fit(dados_treino, precos_treino)
 
-    #O R2R2 negativo ocorre quando o modelo é incapaz de capturar padrões, tendo desempenho pior do que simplesmente prever a média.
+    #Previsão
     precos_previstos = srv.predict(dados_teste)
 
     return precos_previstos
@@ -149,7 +164,7 @@ def Regressao_Linear(dados_treino, precos_treino, dados_teste):
     linear = LinearRegression()
     linear.fit(dados_treino, precos_treino)
 
-    
+    #Previsão
     precos_previstos = linear.predict(dados_teste)
     
     return precos_previstos
@@ -163,11 +178,8 @@ def R2(labels_test, labels_pred,data_train):
 
     return adj_r2
 
-
-
 '''CARREGAR OS DADOS'''
 dados = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
-
 
 '''SEPARA EM DADOS TESTE E TREINO:'''
 cru_treino, cru_teste = train_test_split(dados, train_size=0.5, random_state=7) 
@@ -203,6 +215,7 @@ print("R2",R2(precos_teste, precos_previstos, dados_treino))
 MAE = mean_absolute_error(precos_teste, precos_previstos)
 print("MAE",MAE) 
 print("------------") 
+
 
 
 """
