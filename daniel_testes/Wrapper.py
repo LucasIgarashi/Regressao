@@ -29,7 +29,6 @@ minha_base = atributos
 minha_base["km"] = minha_base["km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
 minha_base["km"] = minha_base["km"].astype(float) # Convertendo os valores para números float
 
-
 # ========================================
 # TRATAMENTO DE DADOS CATEGÓRICOS
 # ========================================
@@ -50,5 +49,5 @@ minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
 # SALVANDO A BASE TRATADA
 # ========================================
 # Salvar como CSV
-# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
+minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
 
