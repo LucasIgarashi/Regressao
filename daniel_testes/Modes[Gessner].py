@@ -216,8 +216,6 @@ MAE = mean_absolute_error(precos_teste, precos_previstos)
 print("MAE",MAE) 
 print("------------") 
 
-
-
 """
 reindex
 

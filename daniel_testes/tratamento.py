@@ -41,7 +41,7 @@ minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
 
 # Transformando dados categóricos DISCRETAS e NÃO Ordinarias em números
 # classificacao_veiculo, codigo_concessionaria, adesivos_personalizados, cor, tipo_cambio, combustivel,couro,categoria,ano,fabricante
-# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_sem_dumie.csv", index=False)
+minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_sem_dumie.csv", index=False)
 minha_base = pd.get_dummies(minha_base, dtype=float)
 
 # ========================================
@@ -55,5 +55,5 @@ atributos_padronizados = padronizar.transform(minha_base)
 # SALVANDO A BASE TRATADA
 # ========================================
 # Salvar como CSV
-# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
+minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
 
