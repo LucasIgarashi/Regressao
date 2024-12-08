@@ -22,8 +22,7 @@ minha_base = minha_base.dropna()
 precos = minha_base["preco"]
 
 # Retirando colunas indesejadas
-atributos = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco', 'portas', 'tração'])
-minha_base = atributos 
+minha_base = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco', 'portas', 'tração'])
 
 #KM: tem km escrito
 minha_base["km"] = minha_base["km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
@@ -33,12 +32,11 @@ minha_base["km"] = minha_base["km"].astype(float) # Convertendo os valores para 
 # TRATAMENTO DE DADOS CATEGÓRICOS
 # ========================================
 
-
 # Transformando dados categóricos ORDINARIOS em números
 # faixa_preco
 ordem = ["Econômico", "Médio", "Luxo", "Muito Luxo"]
 encoder = OrdinalEncoder(categories=[ordem])
-# minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
+minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
 
 
 # Transformando dados categóricos DISCRETAS e NÃO Ordinarias em números
