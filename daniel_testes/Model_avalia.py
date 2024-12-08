@@ -184,7 +184,7 @@ def R2(labels_test, labels_pred,data_train):
 
 
 '''CARREGAR OS DADOS'''
-dados = pd.read_csv(r"C:\Users\Darth\Documents\Sistemas Inteligentes\Regressão\train.csv")
+dados = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
 
 
 '''SEPARA EM DADOS TESTE E TREINO:'''
