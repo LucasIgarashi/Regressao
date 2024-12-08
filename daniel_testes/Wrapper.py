@@ -9,7 +9,7 @@ minha_base = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamen
 
 #formatando cabeçalhos 
 minha_base.columns = minha_base.columns.str.strip()  # Remove espaços no início/fim
-minha_base.columns = minha_base.columns.str.lower()  # Converte para minúsculas (opcional)
+minha_base.columns = minha_base.columns.str.lower()  # Converte para minúsculas 
 
 # ========================================
 # TRATAMENTO DE DADOS INDESEJADOS
@@ -22,23 +22,33 @@ precos = minha_base["preco"]
 minha_base = minha_base.dropna()
 
 # Retirando colunas indesejadas
-atributos = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco'])
+atributos = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco', 'portas', 'tração'])
 minha_base = atributos 
+
+#KM: tem km escrito
+minha_base["km"] = minha_base["km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
+minha_base["km"] = minha_base["km"].astype(float) # Convertendo os valores para números float
+
 
 # ========================================
 # TRATAMENTO DE DADOS CATEGÓRICOS
 # ========================================
 
 
-# Transformando dados categóricos em números
+# Transformando dados categóricos ORDINARIOS em números
+# faixa_preco
 ordem = ["Econômico", "Médio", "Luxo", "Muito Luxo"]
 encoder = OrdinalEncoder(categories=[ordem])
 minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
+
+
+
+# Transformando dados categóricos DISCRETAS e NÃO Ordinarias em números
+# classificacao_veiculo, codigo_concessionaria, adesivos_personalizados, cor
 
 # ========================================
 # SALVANDO A BASE TRATADA
 # ========================================
 # Salvar como CSV
-minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
+# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
 
-print("Base tratada salva com sucesso!")
