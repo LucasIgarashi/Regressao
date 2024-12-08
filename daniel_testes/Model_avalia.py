@@ -17,7 +17,7 @@ def Processar_Dados_Treino(dados):
 
     '''EXCLUI COLUNAS INÚTEIS:''' 
     dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
-
+    # Eliminamos muitas colunas então podemos ter decidido errado sobre a importancia delas pesquisei dois métodos pra dar uma olhada seleção de características ou análise de variância (ANOVA)
 
     '''ARRUMAR SINTAXE'''
 
