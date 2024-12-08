@@ -112,6 +112,7 @@ def Processar_Dados_Teste(dados):
 
 
     '''PREENCHER LACUNAS'''
+    #tem que discutir isso aqui  ass: @Gessner-Lucas
     #Preencher Km pela média dos Km.
     dados["Km"] = dados["Km"].fillna(dados["Km"].mean())
     #Preencher Km pela média dos Km.
