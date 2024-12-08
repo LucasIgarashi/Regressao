@@ -1,31 +1,61 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OrdinalEncoder, StandardScaler
+from sklearn.metrics import r2_score, mean_absolute_error
 
 # Carregar os dados
 minha_base = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
 
-# Ajustando colunas (Preço)
-colunas = list(minha_base.columns)  # Cria lista de colunas
-colunas[-1], colunas[17] = colunas[17], colunas[-1]  # Troca última coluna com a coluna 18
-minha_base = minha_base[colunas]  # Reordena as colunas no DataFrame
+#formatando cabeçalhos 
+minha_base.columns = minha_base.columns.str.strip()  # Remove espaços no início/fim
+minha_base.columns = minha_base.columns.str.lower()  # Converte para minúsculas 
 
-# Separando rótulos e dados
-data = np.array(minha_base.iloc[1:, :-1])  # Ignora a primeira linha e exclui a última coluna
-labels = np.array(minha_base.iloc[1:, -1])  # Ignora a primeira linha e pega a última coluna
+# ========================================
+# TRATAMENTO DE DADOS INDESEJADOS
+# ========================================
 
-# Inicializando o LabelEncoder
-transformador = LabelEncoder()
+# Salvando Precos
+precos = minha_base["preco"]
 
-# Transformando as colunas de 3 a 4 (CD)
-for i in range(3, 5):
-    data[:, i] = transformador.fit_transform(data[:, i])
+# Retirando linhas NA
+minha_base = minha_base.dropna()
 
-# Transformando as colunas de 6 a 8 (FGH)
-for i in range(6, 9):
-    data[:, i] = transformador.fit_transform(data[:, i])
+# Retirando colunas indesejadas
+atributos = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco', 'portas', 'tração'])
+minha_base = atributos 
 
-# Transformando a coluna 8 (H)
-data[:, 8] = transformador.fit_transform(data[:, 8])
+#KM: tem km escrito
+minha_base["km"] = minha_base["km"].str.replace(" km", "", regex=False) # Removendo o texto 'km' e os espaços associados da coluna
+minha_base["km"] = minha_base["km"].astype(float) # Convertendo os valores para números float
 
+# ========================================
+# TRATAMENTO DE DADOS CATEGÓRICOS
+# ========================================
+
+
+# Transformando dados categóricos ORDINARIOS em números
+# faixa_preco
+ordem = ["Econômico", "Médio", "Luxo", "Muito Luxo"]
+encoder = OrdinalEncoder(categories=[ordem])
+# minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
+
+
+# Transformando dados categóricos DISCRETAS e NÃO Ordinarias em números
+# classificacao_veiculo, codigo_concessionaria, adesivos_personalizados, cor, tipo_cambio, combustivel,couro,categoria,ano,fabricante
+# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_sem_dumie.csv", index=False)
+minha_base = pd.get_dummies(minha_base, dtype=float)
+
+# ========================================
+# PADRONIZAÇÃO
+# ========================================
+padronizar = StandardScaler()
+padronizar.fit(minha_base)
+atributos_padronizados = padronizar.transform(minha_base)
+
+# ========================================
+# SALVANDO A BASE TRATADA
+# ========================================
+# Salvar como CSV
+# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
 
