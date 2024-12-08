@@ -15,11 +15,11 @@ minha_base.columns = minha_base.columns.str.lower()  # Converte para minúsculas
 # TRATAMENTO DE DADOS INDESEJADOS
 # ========================================
 
-# Salvando Precos
-precos = minha_base["preco"]
-
 # Retirando linhas NA
 minha_base = minha_base.dropna()
+
+# Salvando Precos
+precos = minha_base["preco"]
 
 # Retirando colunas indesejadas
 atributos = minha_base.drop(columns=['id', 'radio_am_fm', 'data_ultima_lavagem', 'volume_motor', 'modelo', 'débitos', 'preco', 'portas', 'tração'])
