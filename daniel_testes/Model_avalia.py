@@ -91,7 +91,7 @@ def Processar_Dados_Teste(dados):
     }) 
 
     dados["Km"] = dados["Km"].str.replace(" km", "", regex=False) 
-    dados["Km"] = dados["Km"].astype(float) #????
+    dados["Km"] = dados["Km"].astype(float) 
 
         #tomar cuidado se tiver mais info em uma das duas, exemplo tem tudo no trieno mas falta gasosa no teste e vice versa
 
@@ -162,9 +162,6 @@ def R2(labels_test, labels_pred,data_train):
             (len(labels_test) - data_train.shape[1] - 1))
 
     return adj_r2
-
-
-
 
 
 
