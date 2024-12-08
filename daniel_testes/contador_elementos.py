@@ -13,6 +13,9 @@ minha_base = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamen
 #numero_fabricas = minha_base.iloc[:, 2].nunique() 
 #print("Número de fábricas únicas:", numero_fabricas)
 
+numero_consecionarias = minha_base.iloc[:, -4]
+print("Número de vendedoras:", numero_consecionarias.nunique())
+
 #numero_categoria = minha_base.iloc[:, 5].nunique()
 #print("Número de categorias únicas:", numero_categoria)
 
@@ -43,12 +46,4 @@ for index, row in duplicados.iterrows():
     print(f"Linha {index} - ID duplicado: {row['ID']}")
 # Agrupar as linhas com IDs duplicados
 id_duplicados = duplicados.groupby('ID').apply(lambda group: group.index.tolist())
-
 # Exibir as linhas duplicadas de forma desejada
-"""cont = 0
-for id_valor, indices in id_duplicados.items():
-    for i in range(len(indices)):
-        for j in range(i + 1, len(indices)):
-            print(f"Linha {indices[i]} e Linha {indices[j]}")
-            cont += 1
-print("numero de duplicados:",cont)"""
