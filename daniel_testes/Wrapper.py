@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.metrics import r2_score, mean_absolute_error
 
 # Carregar os dados
@@ -38,16 +38,24 @@ minha_base["km"] = minha_base["km"].astype(float) # Convertendo os valores para 
 # faixa_preco
 ordem = ["Econômico", "Médio", "Luxo", "Muito Luxo"]
 encoder = OrdinalEncoder(categories=[ordem])
-minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
-
+# minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
 
 
 # Transformando dados categóricos DISCRETAS e NÃO Ordinarias em números
-# classificacao_veiculo, codigo_concessionaria, adesivos_personalizados, cor
+# classificacao_veiculo, codigo_concessionaria, adesivos_personalizados, cor, tipo_cambio, combustivel,couro,categoria,ano,fabricante
+# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_sem_dumie.csv", index=False)
+minha_base = pd.get_dummies(minha_base, dtype=float)
+
+# ========================================
+# PADRONIZAÇÃO
+# ========================================
+padronizar = StandardScaler()
+padronizar.fit(minha_base)
+atributos_padronizados = padronizar.transform(minha_base)
 
 # ========================================
 # SALVANDO A BASE TRATADA
 # ========================================
 # Salvar como CSV
-minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
+# minha_base.to_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/base_tratada.csv", index=False)
 
