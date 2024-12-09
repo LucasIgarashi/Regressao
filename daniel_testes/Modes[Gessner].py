@@ -92,14 +92,23 @@ def Processar_Dados_Treino(dados):
 
     return dados_limpos, precos_limpos
 
-
+#====================
+#Histograma dos Erros
+#====================
+def plot_histograma_erros(precos_teste, precos_previstos):
+    erros = precos_teste - precos_previstos
+    plt.figure(figsize=(10, 6))
+    plt.hist(erros, bins=30, color='skyblue', edgecolor='black')
+    plt.title("Histograma dos Erros", fontsize=16)
+    plt.xlabel("Erro (Real - Previsto)", fontsize=14)
+    plt.ylabel("Frequência", fontsize=14)
+    plt.grid(True)
+    plt.show()
 
 def Processar_Dados_Teste(dados):
 
     '''EXCLUI COLUNAS INÚTEIS:''' #Ano, Combustivel, Km, Cilindros, Preco, Classificacao_veiculo, Faixa_Preco 
     dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
-
-
 
     '''ARRUMAR SINTAXE'''
 
@@ -157,8 +166,6 @@ def Processar_Dados_Teste(dados):
 
     return atributos_padronizados, precos
 
-
-
 '''MÉTODO: RANDOM FOREST'''
 def Random_Forest(dados_treino, precos_treino, dados_teste):
     
@@ -203,13 +210,6 @@ def R2(labels_test, labels_pred,data_train):
 def R(labels_test, labels_pred):
     return r2_score(labels_test, labels_pred)
 
-
-
-
-   
-
-
-
 '''CARREGAR OS DADOS'''
 dados = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
 
@@ -233,6 +233,13 @@ MAE = mean_absolute_error(precos_teste, precos_previstos)
 print("MAE",MAE)   
 print("------------") 
 
+'''MÉTODO: GRADIENT'''
+precos_previstos = Gradient(dados_treino, precos_treino, dados_teste)
+print("MÉTODO: Gradient")
+print("R2",R2(precos_teste, precos_previstos, dados_treino))
+MAE = mean_absolute_error(precos_teste, precos_previstos)
+print("MAE",MAE) 
+print("------------") 
 
 '''MÉTODO: RANDOM FOREST'''
 precos_previstos = Random_Forest(dados_treino, precos_treino, dados_teste)
@@ -243,16 +250,8 @@ MAE = mean_absolute_error(precos_teste, precos_previstos)
 print("MAE",MAE) 
 print("------------") 
 
-
-
-'''MÉTODO: GRADIENT'''
-precos_previstos = Gradient(dados_treino, precos_treino, dados_teste)
-print("MÉTODO: Gradient")
-print("R2",R2(precos_teste, precos_previstos, dados_treino))
-MAE = mean_absolute_error(precos_teste, precos_previstos)
-print("MAE",MAE) 
-print("------------") 
-
+#plot histograma
+plot_histograma_erros(precos_teste, precos_previstos)
 
 
 
