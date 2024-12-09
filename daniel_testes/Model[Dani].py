@@ -43,7 +43,7 @@ def Processar_Dados_Treino(minha_base):
     minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
 
     # Transformando dados categóricos DISCRETOS e NÃO Ordinários em números
-    minha_base = pd.get_dummies(minha_base, dtype=float)
+    minha_base = pd.get_dummies(minha_base,drop_first=True, dtype=float)
 
     # ========================================
     # PADRONIZAÇÃO
@@ -83,7 +83,7 @@ def Processar_Dados_Teste(minha_base, colunas_treino):
     encoder = OrdinalEncoder(categories=[ordem])
     minha_base['faixa_preco'] = encoder.fit_transform(minha_base[['faixa_preco']])
     
-    minha_base = pd.get_dummies(minha_base, dtype=float)
+    minha_base = pd.get_dummies(minha_base, drop_first=True,dtype=float)
 
     # Reindexando para garantir que as colunas de teste correspondam às de treino
     minha_base = minha_base.reindex(columns=colunas_treino, fill_value=0)  # Alterado para usar as colunas de treino diretamente
