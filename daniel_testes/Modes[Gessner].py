@@ -1,21 +1,26 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
+from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_absolute_error
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.model_selection import cross_val_score, KFold
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.neighbors import KNeighborsRegressor
+import seaborn as sns
 
 
-
+''' PRÉ-PROCESSAMENTO DE DADOS '''
 
 def Processar_Dados_Treino(dados):
 
-    '''EXCLUI COLUNAS INÚTEIS:''' #Ano, Combustivel, Km, Cilindros, Preco, Faixa_Preco 
+    '''EXCLUI COLUNAS INÚTEIS:''' #Sobram as colunas: Ano, Combustivel, Km, Cilindros, Preco, Classificacao_veiculo, Faixa_Preco 
     dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
 
 
@@ -71,7 +76,6 @@ def Processar_Dados_Treino(dados):
     padronizar = StandardScaler()
     padronizar.fit(atributos)
     atributos_padronizados = padronizar.transform(atributos) #vira np array
-
 
     '''TIRA OUTLIERS''' 
     #Tirar o outliers depois de padronizar, pois o método OneClassSVM é sensível à outliers.
@@ -92,23 +96,13 @@ def Processar_Dados_Treino(dados):
 
     return dados_limpos, precos_limpos
 
-#====================
-#Histograma dos Erros
-#====================
-def plot_histograma_erros(precos_teste, precos_previstos):
-    erros = precos_teste - precos_previstos
-    plt.figure(figsize=(10, 6))
-    plt.hist(erros, bins=30, color='skyblue', edgecolor='black')
-    plt.title("Histograma dos Erros", fontsize=16)
-    plt.xlabel("Erro (Real - Previsto)", fontsize=14)
-    plt.ylabel("Frequência", fontsize=14)
-    plt.grid(True)
-    plt.show()
+
 
 def Processar_Dados_Teste(dados):
 
-    '''EXCLUI COLUNAS INÚTEIS:''' #Ano, Combustivel, Km, Cilindros, Preco, Classificacao_veiculo, Faixa_Preco 
+    '''EXCLUI COLUNAS INÚTEIS:''' #Sobram as colunas: Ano, Combustivel, Km, Cilindros, Preco, Classificacao_veiculo, Faixa_Preco 
     dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
+
 
     '''ARRUMAR SINTAXE'''
 
@@ -163,95 +157,137 @@ def Processar_Dados_Teste(dados):
     padronizar.fit(atributos)
     atributos_padronizados = padronizar.transform(atributos) #vira np array
 
-
     return atributos_padronizados, precos
 
-'''MÉTODO: RANDOM FOREST'''
-def Random_Forest(dados_treino, precos_treino, dados_teste):
+
+
+
+
+'''VALIDAÇÂO CRUZADA'''
+
+def avaliar_modelo_com_validacao_cruzada(modelo, dados_treino, precos_treino, n_splits=5):
+    """
+    Realiza validação cruzada para um modelo de regressão
     
-    amazonia = RandomForestRegressor(n_estimators=100)
-    amazonia.fit(dados_treino, precos_treino)
+    Parâmetros:
+    - modelo: Modelo de regressão a ser avaliado
+    - dados_treino: Características de treino
+    - precos_treino: Valores alvo de treino
+    - n_splits: Número de divisões para validação cruzada
+    
+    Retorna:
+    - Média dos scores R²
+    - Média dos MAEs
+    """
+    # Configuração da validação cruzada
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    
+    # Calcula os scores de R²
+    r2_scores = cross_val_score(
+        modelo, 
+        dados_treino, 
+        precos_treino, 
+        cv=kf, 
+        scoring='r2'
+    )
+    
+    # Calcula os MAEs (usando negative_mean_absolute_error)
+    mae_scores = -cross_val_score(
+        modelo, 
+        dados_treino, 
+        precos_treino, 
+        cv=kf, 
+        scoring='neg_mean_absolute_error'
+    )
+    
+    return {
+        'R2_medio': r2_scores.mean(),
+        'R2_std': r2_scores.std(),
+        'MAE_medio': mae_scores.mean(),
+        'MAE_std': mae_scores.std()
+    }
 
-    #Previsão
-    precos_previstos = amazonia.predict(dados_teste)
 
-    return precos_previstos
-
-
-'''MÉTODO: SVR'''
-def Svr(dados_treino, precos_treino, dados_teste):
-    srv = SVR( kernel='rbf', degree=3, gamma='scale', coef0=0.0, tol=0.001, C=1.0, epsilon=0.1, shrinking=True, cache_size=200, verbose=False, max_iter=-1)
-    srv.fit(dados_treino, precos_treino)
-
-    #Previsão
-    precos_previstos = srv.predict(dados_teste)
-
-    return precos_previstos
-
-
-
-def Gradient(dados_treino, precos_treino, dados_teste):
-    # Create a lasso regression model
-    model = GradientBoostingRegressor( loss='squared_error', learning_rate=0.1, n_estimators=100, subsample=1.0, criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, init=None, random_state=None, max_features=None, alpha=0.9, verbose=0, max_leaf_nodes=None, warm_start=False, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0)
-    model.fit(dados_treino, precos_treino)
-
-    # Predict the response for a new data point
-    return model.predict(dados_teste)
-
-'''R2 Ajustado''' #0 à 1
-def R2(labels_test, labels_pred,data_train):
-
-    adj_r2 = (1 - ((1 - r2_score(labels_test, labels_pred)) * (len(labels_test) - 1)) / 
-            (len(labels_test) - data_train.shape[1] - 1))
-
-    return adj_r2
-
-'''R2 Ajustado''' #0 à 1
-def R(labels_test, labels_pred):
-    return r2_score(labels_test, labels_pred)
+# Função para imprimir resultados da validação cruzada
+def imprimir_resultados_validacao(nome_metodo, resultados):
+    print(f"MÉTODO: {nome_metodo}")
+    print(f"R2 Médio: {resultados['R2_medio']:.4f} (±{resultados['R2_std']:.4f})")
+    print(f"MAE Médio: {resultados['MAE_medio']:.4f} (±{resultados['MAE_std']:.4f})")
+    print("------------")
 
 '''CARREGAR OS DADOS'''
-dados = pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv")
-
-
-'''SEPARA EM DADOS TESTE E TREINO:'''
-cru_treino, cru_teste = train_test_split(dados, train_size=0.5, random_state=7) 
-
+#dados = pd.read_csv(r"C:\Users\Darth\Documents\Sistemas Inteligentes\Regressão\train.csv")
+#dados2 = dados
 
 '''PROCESSA DADOS'''
-dados_treino, precos_treino = Processar_Dados_Treino(cru_treino)
-dados_teste, precos_teste = Processar_Dados_Teste(cru_teste)
+dados_treino, precos_treino = Processar_Dados_Treino(pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv"))
+dados_teste, precos_teste = Processar_Dados_Teste(pd.read_csv("/home/daniel-porto/Sistemas_inteligentes/trab_tratamento/train.csv"))
+#dados_teste = dados_treino
+#precos_teste = precos_treino
 
 
+'''AVALIAR OS MODELOS'''
+# Modelos a serem avaliados
+modelos = [
+    ('Regressão Linear', LinearRegression()),
+    ('Random Forest', RandomForestRegressor(n_estimators=100)),
+    ('Gradient', GradientBoostingRegressor( loss='squared_error', learning_rate=0.1, n_estimators=100, subsample=1.0, criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, init=None, random_state=None, max_features=None, alpha=0.9, verbose=0, max_leaf_nodes=None, warm_start=False, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0))
 
-'''MÉTODO: SVR'''
-precos_previstos = Svr(dados_treino, precos_treino, dados_teste)
-print("MÉTODO: SVR")
-print("R2",R2(precos_teste, precos_previstos, dados_treino))
-print("R",R(precos_teste, precos_previstos))
-MAE = mean_absolute_error(precos_teste, precos_previstos)
-print("MAE",MAE)   
-print("------------") 
+]
 
-'''MÉTODO: GRADIENT'''
-precos_previstos = Gradient(dados_treino, precos_treino, dados_teste)
-print("MÉTODO: Gradient")
-print("R2",R2(precos_teste, precos_previstos, dados_treino))
-MAE = mean_absolute_error(precos_teste, precos_previstos)
-print("MAE",MAE) 
-print("------------") 
+# Realizando validação cruzada para cada modelo
+for nome, modelo in modelos:
+    resultados = avaliar_modelo_com_validacao_cruzada(modelo, dados_treino, precos_treino)
+    imprimir_resultados_validacao(nome, resultados)
 
-'''MÉTODO: RANDOM FOREST'''
-precos_previstos = Random_Forest(dados_treino, precos_treino, dados_teste)
-print("MÉTODO: RANDOM FOREST")
-print("R2",R2(precos_teste, precos_previstos, dados_treino))
-print("R",R(precos_teste, precos_previstos))
-MAE = mean_absolute_error(precos_teste, precos_previstos)
-print("MAE",MAE) 
-print("------------") 
 
-#plot histograma
-plot_histograma_erros(precos_teste, precos_previstos)
+#====================================
+# Visualização gŕafica dos resultado
+#====================================
+
+# Ajusta e avalia um modelo específico, plotando o histograma dos erros
+def ajustar_modelo_e_plotar_erros(modelo, nome_modelo, dados_treino, precos_treino, dados_teste, precos_teste):
+    """
+    Ajusta o modelo, avalia no conjunto de teste e plota o histograma dos erros.
+    
+    Parâmetros:
+    - modelo: Instância do modelo a ser ajustado.
+    - nome_modelo: Nome do modelo (str).
+    - dados_treino, precos_treino: Dados de treinamento (atributos e preços).
+    - dados_teste, precos_teste: Dados de teste (atributos e preços).
+    """
+    # Treinando o modelo
+    modelo.fit(dados_treino, precos_treino)
+    
+    # Previsões no conjunto de teste
+    previsoes = modelo.predict(dados_teste)
+    
+    # Erros de previsão (resíduos)
+    erros = precos_teste - previsoes
+    
+    # Métricas de avaliação
+    r2 = r2_score(precos_teste, previsoes)
+    mae = mean_absolute_error(precos_teste, previsoes)
+    print(f"{nome_modelo}:")
+    print(f"R² no teste: {r2:.4f}")
+    print(f"MAE no teste: {mae:.4f}")
+    print("------------")
+    
+    # Histograma dos erros
+    plt.figure(figsize=(10, 6))
+    sns.histplot(erros, kde=True, bins=30, color='skyblue', edgecolor='black')
+    plt.title(f"Histograma dos Erros - {nome_modelo}", fontsize=16)
+    plt.xlabel("Erro (Preço Real - Preço Previsto)", fontsize=14)
+    plt.ylabel("Frequência", fontsize=14)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+
+
+# Treinar e plotar para cada modelo
+for nome, modelo in modelos:
+    ajustar_modelo_e_plotar_erros(modelo, nome, dados_treino, precos_treino, dados_teste, precos_teste)
+
 
 
 
