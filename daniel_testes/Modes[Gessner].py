@@ -268,10 +268,6 @@ def ajustar_modelo_e_plotar_erros(modelo, nome_modelo, dados_treino, precos_trei
     # Métricas de avaliação
     r2 = r2_score(precos_teste, previsoes)
     mae = mean_absolute_error(precos_teste, previsoes)
-    print(f"{nome_modelo}:")
-    print(f"R² no teste: {r2:.4f}")
-    print(f"MAE no teste: {mae:.4f}")
-    print("------------")
     
     # Histograma dos erros
     plt.figure(figsize=(10, 6))
