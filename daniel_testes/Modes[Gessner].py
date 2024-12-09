@@ -245,7 +245,7 @@ for nome, modelo in modelos:
 # Visualização gŕafica dos resultado
 #====================================
 
-# Ajusta e avalia um modelo específico, plotando o histograma dos erros
+"HISTOGRAMA DE ERRO"
 def ajustar_modelo_e_plotar_erros(modelo, nome_modelo, dados_treino, precos_treino, dados_teste, precos_teste):
     """
     Ajusta o modelo, avalia no conjunto de teste e plota o histograma dos erros.
@@ -283,7 +283,3 @@ def ajustar_modelo_e_plotar_erros(modelo, nome_modelo, dados_treino, precos_trei
 # Treinar e plotar para cada modelo
 for nome, modelo in modelos:
     ajustar_modelo_e_plotar_erros(modelo, nome, dados_treino, precos_treino, dados_teste, precos_teste)
-
-
-
-
