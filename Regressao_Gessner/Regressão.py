@@ -1,19 +1,3 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import OneClassSVM
-from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_absolute_error
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.model_selection import cross_val_score, KFold
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.neighbors import KNeighborsRegressor
-import seaborn as sns
 
 import pandas as pd
 import numpy as np
