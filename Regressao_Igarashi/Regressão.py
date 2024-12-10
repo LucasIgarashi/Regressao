@@ -9,11 +9,20 @@ from sklearn.model_selection import cross_val_score, KFold
 from sklearn.ensemble import GradientBoostingRegressor
 import seaborn as sns
 
+# Função para determinar a faixa de preço com base nos limites dinâmicos
+def determinar_faixa_preco(preco, limites):
+    if preco <= limites['Econômico']: return "Econômico"
+    elif limites['Econômico'] < preco <= limites['Médio']: return "Médio"
+    elif limites['Médio'] < preco <= limites['Luxo']: return "Luxo"
+    else: return "Muito Luxo"
 
 # Pré-processamento da base de dados treino
 def Processar_Dados_Treino(dados):
     # Exclui as colunas inúteis
-    dados.drop(dados.columns[[0,1,2,3, 5,6,8,11,12,13,14,15,16,18,19,20,21,22,23]], axis=1, inplace=True)
+    dados.drop(dados.columns[[0,1,2,3, 5,6, 8, 11,12,13,14,15,16, 18,19,20,21,22,23]], axis=1, inplace=True)
+
+    # dados = dados.drop(columns=['NOME1', 'NOME2'])
+    print(dados.columns.to_list())
 
     # Arruma a sintaxe dos valores para o Combustível
     dados["Combustivel"] = dados["Combustivel"].replace({
@@ -28,10 +37,20 @@ def Processar_Dados_Treino(dados):
     dados["Km"] = dados["Km"].str.replace(" km", "", regex=False)
     dados["Km"] = dados["Km"].astype(float)
 
-    # Preenche as células de KM e PRECO com a média
+    # Preenche as células de KM, PRECO com a média
     dados["Km"] = dados["Km"].fillna(dados["Km"].mean())
     dados["Preco"] = dados["Preco"].fillna(dados["Preco"].mean())
+    
+    # Calcular os limites dinâmicos para cada FAIXA_PRECO
+    limites = {
+        'Econômico': dados[dados['Faixa_Preco'] == 'Econômico']['Preco'].max(),
+        'Médio': dados[dados['Faixa_Preco'] == 'Médio']['Preco'].max(),
+        'Luxo': dados[dados['Faixa_Preco'] == 'Luxo']['Preco'].max(),
+        'Muito Luxo': dados[dados['Faixa_Preco'] == 'Muito Luxo']['Preco'].max()
+        }
 
+    dados["Faixa_Preco"] = dados["Preco"].apply(determinar_faixa_preco, limites=limites)
+    
     # Exclui as linhas que possui alguma das celulas vazias
     dados = dados.dropna()
 
@@ -83,9 +102,20 @@ def Processar_Dados_Teste(dados):
     dados["Km"] = dados["Km"].str.replace(" km", "", regex=False)
     dados["Km"] = dados["Km"].astype(float)
 
-    # Preenche as células de KM e PRECO com a média
+    # Preenche as células de KM, PRECO com a média
     dados["Km"] = dados["Km"].fillna(dados["Km"].mean())
     dados["Preco"] = dados["Preco"].fillna(dados["Preco"].mean())
+    
+    # Calcular os limites dinâmicos para cada FAIXA_PRECO
+    limites = {
+        'Econômico': dados[dados['Faixa_Preco'] == 'Econômico']['Preco'].max(),
+        'Médio': dados[dados['Faixa_Preco'] == 'Médio']['Preco'].max(),
+        'Luxo': dados[dados['Faixa_Preco'] == 'Luxo']['Preco'].max(),
+        'Muito Luxo': dados[dados['Faixa_Preco'] == 'Muito Luxo']['Preco'].max()
+        }
+
+    # Preenche a coluna Faixa_Preco com base nos valores de Preco e nos limites dinâmicos
+    dados["Faixa_Preco"] = dados["Preco"].apply(determinar_faixa_preco, limites=limites)
 
     # Exclui as linhas que possui alguma das celulas vazias
     dados = dados.dropna()
@@ -110,7 +140,7 @@ def Processar_Dados_Teste(dados):
     return atributos_padronizados, precos
 
 # Plota o gráfico heatmap
-def plot_heatmap_scatter(modelo, dados, precos, nome_modelo):
+def plot_heatmap_scatter(modelo, dados, precos):
     predicoes = modelo.predict(dados)
 
     plt.figure(figsize=(8, 6))
@@ -131,10 +161,8 @@ def plot_heatmap_scatter(modelo, dados, precos, nome_modelo):
 
     plt.axline((0, 0), (1,1), slope=None, color="pink", linestyle="--", label="y=x (Ideal)")
 
-    plt.title(f"Gráfico de Dispersão - {nome_modelo}")
-    plt.xlabel("Preços Previstos")
-    plt.ylabel("Preços Reais")
     plt.legend()
+    plt.ylabel('')
     plt.show()
 
 
@@ -168,10 +196,11 @@ def avaliar_modelo_com_validacao_cruzada(modelo, dados_treino, precos_treino, n_
 
 # Imprime os resultados dos métodos
 def imprimir_resultados_validacao(nome_metodo, resultados):
+    print("-------------------------------------")
     print(f"MÉTODO: {nome_metodo}")
     print(f"R2 Médio: {resultados['R2_medio']:.4f} (±{resultados['R2_std']:.4f})")
     print(f"MAE Médio: {resultados['MAE_medio']:.4f} (±{resultados['MAE_std']:.4f})")
-    print("------------")
+    print("-------------------------------------")
 
 
 # ============================================================
@@ -200,5 +229,10 @@ for nome, modelo in modelos:
     imprimir_resultados_validacao(nome, resultados)
 
     # Treinar o modelo e fazer previsões
-    modelo.fit(dados_treino, precos_treino)
-    plot_heatmap_scatter(modelo, dados_teste, precos_teste, nome)
+    model = modelo.fit(dados_treino, precos_treino)
+    plot_heatmap_scatter(modelo, dados_teste, precos_teste)
+
+# import joblib
+# model.dump('caminho.joblib')
+
+# model = joblib.load(with caminho open('rb') as file)
